@@ -1,0 +1,59 @@
+{
+  "name": "@tarmacagent/mcp",
+  "version": "0.1.0",
+  "description": "MCP server for Tarmac: let Claude, Cursor or any MCP agent test on-chain actions against real Robinhood Chain data with policy checks on every swap.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "ai-agent",
+    "onchain",
+    "robinhood-chain",
+    "defi",
+    "claude"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "tarmac-mcp": "./dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tarmacagent/tarmac-mcp.git"
+  },
+  "homepage": "https://github.com/tarmacagent/tarmac-mcp#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && chmod +x dist/cli.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && vitest run",
+    "prepublishOnly": "npm run typecheck && npm test"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "@tarmacagent/sdk": "^0.1.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "typescript": "^5.9.3",
+    "vitest": "^5.1.0"
+  }
+}
