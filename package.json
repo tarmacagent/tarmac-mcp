@@ -1,6 +1,6 @@
 {
   "name": "@tarmacagent/mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "MCP server for Tarmac: let Claude, Cursor or any MCP agent test on-chain actions against real Robinhood Chain data with policy checks on every swap.",
   "keywords": [
     "mcp",

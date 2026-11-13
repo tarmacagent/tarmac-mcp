@@ -1,6 +1,16 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { createTarmacClient, TarmacToolError, type RunSession } from "@tarmacagent/sdk";
+import { readFileSync } from "node:fs";
 import { z } from "zod";
+
+/** Version reported to MCP clients, read from package.json so it never drifts from the release. */
+const VERSION: string = (() => {
+  try {
+    return JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")).version;
+  } catch {
+    return "0.0.0";
+  }
+})();
 
 export interface ServerOptions {
   /** Tarmac server, e.g. https://your-tarmac-server */
@@ -29,7 +39,7 @@ export function createTarmacMcpServer(opts: ServerOptions) {
   const client = createTarmacClient({ baseUrl: opts.baseUrl, fetch: opts.fetch });
   let session: RunSession | null = opts.runId && opts.runToken ? client.attach(opts.runId, opts.runToken) : null;
 
-  const server = new McpServer({ name: "tarmac", version: "0.1.0" });
+  const server = new McpServer({ name: "tarmac", version: VERSION });
   const active = () => {
     if (!session) throw new TarmacToolError("NO_ACTIVE_RUN", "Start a run with tarmac_start_run (or attach with tarmac_attach) first.");
     return session;

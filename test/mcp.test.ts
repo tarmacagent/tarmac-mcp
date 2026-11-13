@@ -54,6 +54,13 @@ describe("tarmac-mcp over stdio", () => {
     await c.close();
   });
 
+  it("reports the package version to clients", async () => {
+    const c = await connect();
+    const { version } = await import("../package.json", { with: { type: "json" } }).then((m) => m.default);
+    expect(c.getServerVersion()).toMatchObject({ name: "tarmac", version });
+    await c.close();
+  });
+
   it("reports server status and available modes", async () => {
     const c = await connect();
     const r = text(await c.callTool({ name: "tarmac_server_status", arguments: {} }));

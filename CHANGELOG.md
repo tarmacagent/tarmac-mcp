@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.2.0
+
+First release on npm.
 
 - New tool `tarmac_server_status`: checks the server is reachable and which run modes it serves, so the agent can diagnose setup problems itself.
 - `TARMAC_URL` is now optional and defaults to the hosted Tarmac (https://www.tarmacagent.com).
