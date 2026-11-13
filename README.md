@@ -11,7 +11,7 @@ An [MCP](https://modelcontextprotocol.io) server for Tarmac. Claude, Cursor, or 
 ### Claude Code
 
 ```bash
-claude mcp add tarmac -e TARMAC_URL=https://your-tarmac-server -- npx -y @tarmacagent/mcp
+claude mcp add tarmac -- npx -y @tarmacagent/mcp
 ```
 
 ### Claude Desktop / Cursor / other clients
@@ -21,14 +21,22 @@ claude mcp add tarmac -e TARMAC_URL=https://your-tarmac-server -- npx -y @tarmac
   "mcpServers": {
     "tarmac": {
       "command": "npx",
-      "args": ["-y", "@tarmacagent/mcp"],
-      "env": { "TARMAC_URL": "https://your-tarmac-server" }
+      "args": ["-y", "@tarmacagent/mcp"]
     }
   }
 }
 ```
 
-If the server requires sign-in, create a run in the Tarmac app (**Run → Your agent**) and add `TARMAC_RUN_ID` and `TARMAC_RUN_TOKEN` to `env`. The server attaches to that run on startup.
+It connects to the hosted Tarmac at [tarmacagent.com](https://www.tarmacagent.com) by default. To use your own server, add `"env": { "TARMAC_URL": "https://your-tarmac-server" }`.
+
+### Signing in
+
+The hosted server starts runs only for signed-in users. Open [tarmacagent.com](https://www.tarmacagent.com), sign in, choose **Run → Your agent**, and either:
+
+- paste the run id and token into the chat; your agent calls `tarmac_attach` with them, or
+- add `TARMAC_RUN_ID` and `TARMAC_RUN_TOKEN` to `env`, and the server attaches on startup.
+
+If your agent tries `tarmac_start_run` without signing in, the error tells it these steps, so it can walk you through them.
 
 ## Tools
 

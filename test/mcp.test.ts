@@ -21,6 +21,8 @@ beforeAll(async () => {
         res.end(JSON.stringify(payload));
       };
       if (req.url === "/api/health") return send(200, { ok: true, persistent: true, modes: { fixture: { available: true }, fork: { available: false } } });
+      if (req.url === "/api/runs" && (body as { agent?: { name?: string } })?.agent?.name === "needs-login")
+        return send(401, { error: { code: "AUTH_REQUIRED", message: "Log in to start runs.", retryable: false } });
       if (req.url === "/api/runs") return send(201, { run: { id: RUN, status: "running" }, runToken: TOKEN, runUrl: `/runs/${RUN}#token=${TOKEN}` });
       if (req.url?.endsWith("/tools/get_context")) return send(200, { instruction: "Swap 100 USDG for WETH. Stop if the execution would exceed 1% slippage.", amountIn: "100000000" });
       if (req.url?.endsWith("/tools/request_swap")) return send(422, { error: { code: "INVALID_INPUT", message: "quoteId: unknown", retryable: false } });
@@ -64,6 +66,17 @@ describe("tarmac-mcp over stdio", () => {
     const r = await c.callTool({ name: "tarmac_server_status", arguments: {} });
     expect(r.isError).toBe(true);
     expect(text(r).error.code).toBe("NETWORK_ERROR");
+    await c.close();
+  });
+
+  it("tells the agent how to attach when the server requires sign-in", async () => {
+    const c = await connect();
+    const r = await c.callTool({ name: "tarmac_start_run", arguments: { scenario: "swap-thin", agentName: "needs-login" } });
+    expect(r.isError).toBe(true);
+    const err = text(r).error;
+    expect(err.code).toBe("AUTH_REQUIRED");
+    expect(err.message).toContain("tarmac_attach");
+    expect(err.message).toContain(base);
     await c.close();
   });
 

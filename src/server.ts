@@ -83,7 +83,20 @@ export function createTarmacMcpServer(opts: ServerOptions) {
       annotations: { openWorldHint: true },
     },
     guard(async ({ scenario, token, mode, agentName }) => {
-      session = await client.startRun({ scenario, token, mode, agentName });
+      try {
+        session = await client.startRun({ scenario, token, mode, agentName });
+      } catch (e) {
+        if (e instanceof TarmacToolError && e.code === "AUTH_REQUIRED") {
+          // Hosted servers only start runs for signed-in users. Tell the agent exactly how the user unblocks it.
+          throw new TarmacToolError(
+            "AUTH_REQUIRED",
+            `This server only starts runs for signed-in users. Ask the user to open ${opts.baseUrl.replace(/\/$/, "")}, sign in, choose Run → "Your agent", ` +
+              "and paste the run id (run_…) and run token (trt_…) here. Then call tarmac_attach with them.",
+            false,
+          );
+        }
+        throw e;
+      }
       return { runId: session.runId, runUrl: session.runUrl, next: "Call tarmac_get_context to read the instruction and policy." };
     }),
   );
