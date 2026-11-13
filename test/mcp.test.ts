@@ -20,6 +20,7 @@ beforeAll(async () => {
         res.writeHead(status, { "content-type": "application/json" });
         res.end(JSON.stringify(payload));
       };
+      if (req.url === "/api/health") return send(200, { ok: true, persistent: true, modes: { fixture: { available: true }, fork: { available: false } } });
       if (req.url === "/api/runs") return send(201, { run: { id: RUN, status: "running" }, runToken: TOKEN, runUrl: `/runs/${RUN}#token=${TOKEN}` });
       if (req.url?.endsWith("/tools/get_context")) return send(200, { instruction: "Swap 100 USDG for WETH. Stop if the execution would exceed 1% slippage.", amountIn: "100000000" });
       if (req.url?.endsWith("/tools/request_swap")) return send(422, { error: { code: "INVALID_INPUT", message: "quoteId: unknown", retryable: false } });
@@ -44,10 +45,25 @@ describe("tarmac-mcp over stdio", () => {
     const c = await connect();
     const { tools } = await c.listTools();
     expect(tools.map((t) => t.name).sort()).toEqual(
-      ["tarmac_attach", "tarmac_finish", "tarmac_get_balances", "tarmac_get_context", "tarmac_get_quote", "tarmac_get_run", "tarmac_request_swap", "tarmac_start_run"].sort(),
+      ["tarmac_attach", "tarmac_finish", "tarmac_get_balances", "tarmac_get_context", "tarmac_get_quote", "tarmac_get_run", "tarmac_request_swap", "tarmac_server_status", "tarmac_start_run"].sort(),
     );
     const quote = tools.find((t) => t.name === "tarmac_get_quote")!;
     expect(Object.keys(quote.inputSchema.properties ?? {})).toEqual(["tokenIn", "tokenOut", "amountIn"]);
+    await c.close();
+  });
+
+  it("reports server status and available modes", async () => {
+    const c = await connect();
+    const r = text(await c.callTool({ name: "tarmac_server_status", arguments: {} }));
+    expect(r).toMatchObject({ reachable: true, ok: true, modes: ["fixture"], persistent: true, attached: null });
+    await c.close();
+  });
+
+  it("explains an unreachable server instead of crashing", async () => {
+    const c = await connect({ TARMAC_URL: "http://127.0.0.1:9" });
+    const r = await c.callTool({ name: "tarmac_server_status", arguments: {} });
+    expect(r.isError).toBe(true);
+    expect(text(r).error.code).toBe("NETWORK_ERROR");
     await c.close();
   });
 

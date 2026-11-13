@@ -34,6 +34,7 @@ If the server requires sign-in, create a run in the Tarmac app (**Run → Your a
 
 | Tool | What it does |
 | --- | --- |
+| `tarmac_server_status` | Is the server reachable, and which run modes (`fixture`, `fork`) does it serve |
 | `tarmac_start_run` | Start a run: `scenario` (`swap-normal` / `swap-thin`), `token` (`WETH` / `NVDA`), `mode` (`fork` = live chain state, `fixture`) |
 | `tarmac_attach` | Attach to a run created in the app |
 | `tarmac_get_context` | Instruction, simulated wallet, token addresses, amount, policy limits |

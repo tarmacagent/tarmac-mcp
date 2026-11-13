@@ -45,6 +45,30 @@ export function createTarmacMcpServer(opts: ServerOptions) {
     };
 
   server.registerTool(
+    "tarmac_server_status",
+    {
+      title: "Check the Tarmac server",
+      description:
+        "Check that the Tarmac server is reachable and which run modes it serves (fixture, fork). Call this first if a run fails to start, before telling the user something is broken.",
+      annotations: { readOnlyHint: true, openWorldHint: true },
+    },
+    guard(async () => {
+      const doFetch = opts.fetch ?? fetch;
+      const base = opts.baseUrl.replace(/\/$/, "");
+      let res: Response;
+      try {
+        res = await doFetch(`${base}/api/health`, { headers: { accept: "application/json" } });
+      } catch (e) {
+        throw new TarmacToolError("NETWORK_ERROR", `Could not reach ${base}: ${(e as Error).message}`, true);
+      }
+      if (!res.ok) throw new TarmacToolError(`HTTP_${res.status}`, `${base}/api/health answered ${res.status}`, res.status >= 500);
+      const health = (await res.json()) as { ok?: boolean; persistent?: boolean; modes?: Record<string, { available?: boolean }> };
+      const modes = Object.entries(health.modes ?? {}).filter(([, m]) => m?.available).map(([name]) => name);
+      return { server: base, reachable: true, ok: !!health.ok, modes, persistent: health.persistent ?? null, attached: session?.runId ?? null };
+    }),
+  );
+
+  server.registerTool(
     "tarmac_start_run",
     {
       title: "Start a Tarmac run",
